@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Brainfuck</title>
+
+	<script> 
+		var i, j;
+		var input;
+		var inp;
+
+		var curCell;
+		var curCellObj;
+
+		var running;
+		var level;
+
+		function init() {
+			curCell = 0;
+			curCellObj = memElem( numToAddr( 0 ) );
+
+			document.getElementById( "output" ).innerHTML = "";
+
+			for( i = 0; i < 100; ++i ) {
+				memElem( numToAddr( i ) ).value = 0;
+			}
+
+			input = null;
+			running = false;
+		}
+
+		function drawMem() {
+
+			document.writeln( "<hr><center><h2>Memory</h2><table><tbody>" );
+
+			for( i = 0; i < 10; ++i ) {
+				document.writeln( "<tr>" );
+
+				for( j = 0; j < 10; ++j ) {
+					document.writeln( "<td>" + j + i + ": " + "<input type=\"text\" id=\"mem" + j + i + "\" size=4 tabindex=\"" + j*10 + i + 1 + "\"></td>" );
+				}
+
+				document.writeln( "</tr>" );
+			}
+
+			document.writeln( "</tbody></table></center><hr>");
+
+			memElem( "00" ).style.backgroundColor = "#99FFCC";
+		}
+
+		function numToAddr( num ) {
+			if( num / 10 >= 1 ) {
+				return num + "";
+			} else return "0" + num;
+		}
+
+		function memElem( addr )
+		{
+			return document.getElementById( "mem" + addr );
+		}
+
+		function doStep() {
+			if( input == null ) input = document.getElementById( "input" ).value;
+				else if( input.length == i ) input += document.getElementById( "input" ).value;
+			if( !running ){ running = true; i = 0; }
+
+			interpretSymbol( input.charAt( i++ ) );
+
+			document.getElementById( "input" ).value = input.substr( i, input.length );
+		}
+
+		function doRun() {
+			if( input == null ) input = document.getElementById( "input" ).value;
+				else if( input.length == i ) input += document.getElementById( "input" ).value;
+			if( !running ){ running = true; i = 0; }
+
+			for( i; i < input.length; ++i ) {
+				interpretSymbol( input.charAt( i ) );
+			}
+
+			document.getElementById( "input" ).value = "";
+			input = "";
+			i = 0;
+		}
+
+		function interpretSymbol( symbol ) {
+			switch( symbol ) {
+				case '<':
+					--curCell;
+					curCellObj = memElem( numToAddr( curCell ) );
+					doReload();
+					break;
+
+				case '>':
+					++curCell;
+					curCellObj = memElem( numToAddr( curCell ) );
+					doReload();
+					break;
+
+				case '+':
+					curCellObj.value = parseInt( curCellObj.value ) + 1;
+					break;
+
+				case '-':
+					curCellObj.value = parseInt( curCellObj.value ) - 1;
+					break;
+
+				case '.':
+					document.getElementById( "output" ).innerHTML += String.fromCharCode( curCellObj.value );
+					break;
+
+				case ',':
+					inp = input.charAt( ++i );
+					curCellObj.value = inp;
+					break;
+
+				case '[':
+					level = 0;
+
+					if( curCellObj.value == 0 ) {
+						++i;
+
+						while( input.charAt( i ) != "]" || level != 0 ) {
+							if( input.charAt( i ) == "[" ) {
+								++level;
+								console.log( "up: " + level );
+							}
+
+							if( input.charAt( i ) == "]" ) {
+								--level;
+								console.log( "down: " + level );
+							}
+
+							++i;
+						}
+					}
+					break;
+
+				case ']':
+					level = 0;
+
+					if( curCellObj.value != 0 ) {
+						i -= 2;
+
+						while( input.charAt( i ) != "[" || level != 0 ) {
+							if( input.charAt( i ) == "]" ) {
+								++level;
+							}
+
+							if( input.charAt( i ) == "[" ) {
+								--level;
+							}
+
+							--i;
+						}
+					}
+					break;
+			}
+		}
+
+		function doReload() {
+			for( j = 0; j < 100; ++j ) {
+				if( j == curCell ) {
+					memElem( numToAddr( j ) ).style.backgroundColor = "#99FFCC";
+				} else memElem( numToAddr( j ) ).style.backgroundColor = "#FFFFFF";
+			}
+		}
+
+		function doReset() {
+			init();
+			doReload();
+		}
+	</script>
+</head>
+<body bgcolor="#C0C899">
+	<center>
+		<h2>Brainfuck Interpreter</h2>
+
+	<script> drawMem(); </script>
+
+		<textarea name="Text1" id="input" cols="40" rows="5"></textarea><br>
+		<input type="button" value="Step" onclick="doStep();">
+		<input type="button" value="Interpret" onclick="doRun();">
+		<input type="button" value="Reset" onclick="doReset();">
+		<p id="output"></p>
+	</center>
+
+	<script> init(); </script>
+</body>
+</html>
